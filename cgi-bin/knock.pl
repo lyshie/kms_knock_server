@@ -75,10 +75,10 @@ sub _fetch {
     # select and fetch
     $sth = $dbh->prepare(
         qq{
-		SELECT lasttime, count
-		  FROM knock
-		 WHERE (ip = ?) AND (username = ?) AND (host = ?);
-		}
+        SELECT lasttime, count
+          FROM knock
+         WHERE (ip = ?) AND (username = ?) AND (host = ?);
+        }
     );
     $sth->execute( $ip, $user, $host );
 
@@ -94,7 +94,7 @@ sub _fetch {
 }
 
 sub _increment {
-    my ( $dbh, $ip, $user, $host ) = @_;
+    my ( $dbh, $ip, $user, $host, $reset ) = @_;
 
     my ( $lasttime, $count );
     my $time = time();
@@ -103,17 +103,19 @@ sub _increment {
     # first, insert or ignore
     $sth = $dbh->prepare(
         qq{
-	    INSERT OR IGNORE INTO knock (lasttime, ip, username, host, count)
-		               VALUES (?, ?, ?, ?, 0);
-        UPDATE knock SET count = count + 1 WHERE (ip = ?) AND (username = ?) AND (host = ?);
-	}
+        INSERT OR IGNORE INTO knock (lasttime, ip, username, host, count)
+                       VALUES (?, ?, ?, ?, 0);
+    }
     );
     $sth->execute( $time, $ip, $user, $host );
 
     # second, update
     $sth = $dbh->prepare(
-        qq{
-        UPDATE knock SET lasttime = ?, count = count + 1 WHERE (ip = ?) AND (username = ?) AND (host = ?);	}
+        $reset
+        ? qq{
+        UPDATE knock SET lasttime = ?, count = 1 WHERE (ip = ?) AND (username = ?) AND (host = ?);    }
+        : qq{
+        UPDATE knock SET lasttime = ?, count = count + 1 WHERE (ip = ?) AND (username = ?) AND (host = ?);    }
     );
     $sth->execute( $time, $ip, $user, $host );
 
@@ -144,12 +146,22 @@ sub main {
 
             my $gap = time() - $lasttime;
             if ( $gap > 30 ) {    # check time gap
-                _increment( $dbh, $_GET{'ip'}, $_GET{'user'}, $_GET{'host'} );
+                if ( $gap > 86400 )
+                {                 # last try over 24 hours, and reset to 1 time
+                    _increment( $dbh, $_GET{'ip'}, $_GET{'user'},
+                        $_GET{'host'}, 1 );
+                }
+                else {
+                    _increment( $dbh, $_GET{'ip'}, $_GET{'user'},
+                        $_GET{'host'} );
+                }
+
                 ( $lasttime, $count ) =
                   _fetch( $dbh, $_GET{'ip'}, $_GET{'user'}, $_GET{'host'} );
 
                 if ( $count > $MAX_TRY ) {    # check max times
-                    print qq{FAIL: Maximum times exceeded. (count = $count)\n};
+                    print
+qq{FAIL: Maximum times exceeded within 24 hours. (count = $count)\n};
                 }
                 else {
                     print qq{OK: $_GET{'ip'}, }, scalar( localtime($lasttime) ),
@@ -175,25 +187,25 @@ qq{ACTION=knock IP=$_GET{'ip'} USER=$_GET{'user'} HOST=$_GET{'host'} COUNT=$coun
     else {
         print header( -charset => 'utf-8' );
         print qq{
-		<html>
-		<head></head>
-		<body>
-		<a href="kms.bat">Download kms.bat</a>
-		</br >
-		</br >
-		<form method="post">
-			<label for="user">Username:</label><input id="user" type="text" name="user" value="" />@
-			<select id="host" name="host">
-				<option value="mx.test.edu.tw">mx.test.edu.tw</option>
-				<option value="cc.test.edu.tw">cc.test.edu.tw</option>
-			</select>
-			<br />
-			<label for="password">Password:</label><input id="password" type="password" name="password" value="" /><br />
-			<input type="submit" />
-		</form>
-		</body>
-		</html>
-		}, "\n";
+        <html>
+        <head></head>
+        <body>
+        <a href="kms.bat">Download kms.bat</a>
+        </br >
+        </br >
+        <form method="post">
+            <label for="user">Username:</label><input id="user" type="text" name="user" value="" />@
+            <select id="host" name="host">
+                <option value="mx.test.edu.tw">mx.test.edu.tw</option>
+                <option value="cc.test.edu.tw">cc.test.edu.tw</option>
+            </select>
+            <br />
+            <label for="password">Password:</label><input id="password" type="password" name="password" value="" /><br />
+            <input type="submit" />
+        </form>
+        </body>
+        </html>
+        }, "\n";
     }
 }
 
