@@ -51,7 +51,7 @@ Usage
 
         # sqlite3 cgi-bin/databases/knock.sqlite < cgi-bin/_knock.sql
 
-  * Configiure CGI application
+  * Configure CGI application
 
         # cd /var/www/cgi-bin
         # sudo cp [KNOCK_SRC]/cgi-bin/knock.pl .
