@@ -38,26 +38,26 @@ Usage
 -----
   * Configure fail2ban and rsyslog
 
-          # cd /etc/fail2ban
-          # sudo cp [KNOCK_SRC]/fail2ban/action.d/knock.conf action.d/
-          # sudo cp [KNOCK_SRC]/fail2ban/filter.d/knock.conf filter.d/
-          # sudo cat [KNOCK_SRC]/fail2ban/jail.conf >> jail.conf
-          # sudo systemctl restart fail2ban.service
+        # cd /etc/fail2ban
+        # sudo cp [KNOCK_SRC]/fail2ban/action.d/knock.conf action.d/
+        # sudo cp [KNOCK_SRC]/fail2ban/filter.d/knock.conf filter.d/
+        # sudo cat [KNOCK_SRC]/fail2ban/jail.conf >> jail.conf
+        # sudo systemctl restart fail2ban.service
 
-          # sudo vim /etc/rsyslog.conf
-          local7.*        -/var/log/local7.log
+        # sudo vim /etc/rsyslog.conf
+        local7.*        -/var/log/local7.log
 
   * Create sqlite database
 
-          # sqlite3 cgi-bin/databases/knock.sqlite < cgi-bin/_knock.sql
+        # sqlite3 cgi-bin/databases/knock.sqlite < cgi-bin/_knock.sql
 
   * Configiure CGI application
 
-          # cd /var/www/cgi-bin
-          # sudo cp [KNOCK_SRC]/cgi-bin/knock.pl .
-          # sudo cp -r [KNOCK_SRC]/cgi-bin/databases .
-          # sudo chown -R apache:apache knock.pl databases/
-          # sudo chmod 755 knock.pl databases/
+        # cd /var/www/cgi-bin
+        # sudo cp [KNOCK_SRC]/cgi-bin/knock.pl .
+        # sudo cp -r [KNOCK_SRC]/cgi-bin/databases .
+        # sudo chown -R apache:apache knock.pl databases/
+        # sudo chmod 755 knock.pl databases/
 
 Sample output log
 -----------------
