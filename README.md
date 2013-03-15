@@ -1,7 +1,7 @@
 KMS (Key-Management-Service) Knock Server
 =========================================
 The KMS (Key-Management-Service) knock server provides an easy way to temporarily open TCP
-1688 port by knocking the server. You can use various way to authenticatea a user, like POP3,
+1688 port by knocking the server. You can use various way to authenticate a user, like POP3,
 Radius, LDAP, etc. It is suitable for those that dose not have VPN (Virtual Private Network).
 
 Architecture
